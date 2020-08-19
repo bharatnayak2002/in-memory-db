@@ -82,18 +82,12 @@ public class App
     public static void main( String[] args )
     {
         InMemoryDB imdb = new InMemoryDB();
-        //runTest1(imdb);
-        //runTest2(imdb);
-        //runTest3(imdb);
-        //runTest4(imdb);
-        //runTest5(imdb);
-        //runTest6(imdb);
-        //System.out.println( "Hello World!" );
         Scanner scanner = new Scanner(System.in);
-        while (true) {
-            System.out.println("Enter command:");
-            String cmd = scanner.nextLine();
-            imdb.executeCommand(cmd);
-        }
+        runTest3(imdb);
+//        while (true) {
+//            System.out.println("Enter command:");
+//            String cmd = scanner.nextLine();
+//            imdb.executeCommand(cmd);
+//        }
     }
 }

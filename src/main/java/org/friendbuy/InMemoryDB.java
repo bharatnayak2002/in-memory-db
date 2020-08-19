@@ -112,6 +112,7 @@ public class InMemoryDB {
                     System.out.println(returnMessage);
                     break;
                 }
+                inRollbackMode = true;
                 while (true) {
                     String command = rollbackStack.pop();
                     if (command.equals("BEGIN")) {
@@ -120,6 +121,7 @@ public class InMemoryDB {
                         executeCommand(command);
                     }
                 }
+                inRollbackMode = false;
                 if (rollbackStack.size() == 0) {
                     inTransactionMode = false;
                 }
