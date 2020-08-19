@@ -10,9 +10,10 @@ public class InMemoryDB {
     boolean inTransactionMode = false;
     boolean inRollbackMode = false;
 
-    public void executeCommand(String cmd) {
+    public String executeCommand(String cmd) {
         String[] split = cmd.split(" ");
         String action = split[0];
+        String returnMessage = "";
         switch(action) {
             case "SET":
                 if(split.length == 3) {
@@ -45,7 +46,8 @@ public class InMemoryDB {
                     count = valueCounter.containsKey(value) ? valueCounter.get(value) : 0;
                     valueCounter.put(value, count +1);
                 } else {
-                    System.out.println("Wrong format " + cmd);
+                    returnMessage = "Wrong format " + cmd;
+                    System.out.println(returnMessage);
                 }
                 break;
             case "UNSET":
@@ -64,34 +66,40 @@ public class InMemoryDB {
                         rollbackStack.push(rollbackCmd);
                     }
                 } else {
-                    System.out.println("Wrong format");
+                    returnMessage = "Wrong format " + cmd;
+                    System.out.println(returnMessage);
                 }
-                // code block
                 break;
             case "GET":
                 if(split.length == 2) {
                     String key = split[1];
                     if(imDB.containsKey(key)) {
-                        System.out.println(imDB.get(key));
+                        returnMessage = imDB.get(key).toString();
+                        System.out.println(returnMessage);
                     } else {
-                        System.out.println("NULL");
+                        returnMessage = "NULL";
+                        System.out.println(returnMessage);
                     }
-                    //imDB.remove(key);
                 } else {
-                    System.out.println("Wrong format " + cmd);
+                    returnMessage = "Wrong format " + cmd;
+                    System.out.println(returnMessage);
                 }
-                // code block
                 break;
             case "NUMEQUALTO":
                 if(split.length == 2) {
                     int key = Integer.parseInt(split[1]);
                     if(valueCounter.containsKey(key)) {
-                        System.out.println(valueCounter.get(key));
+                        returnMessage = valueCounter.get(key).toString();
+                        System.out.println(returnMessage);
+                        return returnMessage;
                     } else  {
-                        System.out.println("0");
+                        returnMessage = "0";
+                        System.out.println(returnMessage);
+                        return returnMessage;
                     }
                 } else {
-                    System.out.println("Wrong format " + cmd);
+                    returnMessage = "Wrong format " + cmd;
+                    System.out.println(returnMessage);
                 }
                 break;
             case "BEGIN":
@@ -100,7 +108,8 @@ public class InMemoryDB {
                 break;
             case "ROLLBACK":
                 if(!inTransactionMode) {
-                    System.out.println("NO TRANSACTION");
+                    returnMessage = "NO TRANSACTION";
+                    System.out.println(returnMessage);
                     break;
                 }
                 while (true) {
@@ -108,7 +117,6 @@ public class InMemoryDB {
                     if (command.equals("BEGIN")) {
                         break;
                     } else {
-                        System.out.println("Executing command "+ command);
                         executeCommand(command);
                     }
                 }
@@ -122,13 +130,12 @@ public class InMemoryDB {
                 break;
             case "END":
                 System.exit(0);
-                // code block
                 break;
 
             default:
-                System.out.println("Wrong format " + cmd);
-                // code block
+                returnMessage = "Wrong format " + cmd;
+                System.out.println(returnMessage);
         }
-
+        return returnMessage;
     }
 }
