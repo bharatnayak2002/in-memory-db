@@ -21,30 +21,34 @@ public class InMemoryDB {
                     String rollbackCmd;
                     String key = split[1];
                     String stringVal = split[2];
+                    try {
+                        int value = Integer.parseInt(stringVal);
+                        if( imDB.containsKey(key) ) {
+                            int currentValue = imDB.get(key);
+                            count = valueCounter.get(currentValue) - 1;
+                            if(count == 0) {
+                                valueCounter.remove(currentValue);
+                            } else {
+                                valueCounter.put(currentValue, count);
+                            }
 
-                    int value = Integer.parseInt(stringVal);
-                    if( imDB.containsKey(key) ) {
-                        int currentValue = imDB.get(key);
-                        count = valueCounter.get(currentValue) - 1;
-                        if(count == 0) {
-                            valueCounter.remove(currentValue);
+                            if(inTransactionMode && !inRollbackMode) {
+                                rollbackCmd = "SET " + key+" "+currentValue;
+                                rollbackStack.push(rollbackCmd);
+                            }
                         } else {
-                            valueCounter.put(currentValue, count);
+                            if(inTransactionMode && !inRollbackMode) {
+                                rollbackCmd = "UNSET " + key;
+                                rollbackStack.push(rollbackCmd);
+                            }
                         }
-
-                        if(inTransactionMode && !inRollbackMode) {
-                            rollbackCmd = "SET " + key+" "+currentValue;
-                            rollbackStack.push(rollbackCmd);
-                        }
-                    } else {
-                        if(inTransactionMode && !inRollbackMode) {
-                            rollbackCmd = "UNSET " + key;
-                            rollbackStack.push(rollbackCmd);
-                        }
+                        imDB.put(key, value);
+                        count = valueCounter.containsKey(value) ? valueCounter.get(value) : 0;
+                        valueCounter.put(value, count +1);
+                    } catch(NumberFormatException e){
+                        returnMessage = "Wrong format " + cmd;
+                        System.out.println(returnMessage);
                     }
-                    imDB.put(key, value);
-                    count = valueCounter.containsKey(value) ? valueCounter.get(value) : 0;
-                    valueCounter.put(value, count +1);
                 } else {
                     returnMessage = "Wrong format " + cmd;
                     System.out.println(returnMessage);
@@ -53,17 +57,22 @@ public class InMemoryDB {
             case "UNSET":
                 if(split.length == 2) {
                     String key = split[1];
-                    int value = imDB.get(key);
-                    imDB.remove(key);
-                    int count = valueCounter.get(value) - 1;
-                    if(count == 0) {
-                        valueCounter.remove(value);
+                    if(imDB.containsKey(key)) {
+                        int value = imDB.get(key);
+                        imDB.remove(key);
+                        int count = valueCounter.get(value) - 1;
+                        if(count == 0) {
+                            valueCounter.remove(value);
+                        } else {
+                            valueCounter.put(value, count);
+                        }
+                        if(inTransactionMode && !inRollbackMode) {
+                            String rollbackCmd = "SET " + key+" "+value;
+                            rollbackStack.push(rollbackCmd);
+                        }
                     } else {
-                        valueCounter.put(value, count);
-                    }
-                    if(inTransactionMode && !inRollbackMode) {
-                        String rollbackCmd = "SET " + key+" "+value;
-                        rollbackStack.push(rollbackCmd);
+                        returnMessage = "Wrong format " + cmd;
+                        System.out.println(returnMessage);
                     }
                 } else {
                     returnMessage = "Wrong format " + cmd;
